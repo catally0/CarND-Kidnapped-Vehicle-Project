@@ -52,9 +52,11 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
     
     particles.push_back(p);
 
+    is_initialized = true;
+
     // Print your samples to the terminal.
-    std::cout << "Init #" << i << ": " << p.x << " " << p.y << " " 
-              << p.theta << std::endl;
+    //std::cout << "Init #" << i << ": " << p.x << " " << p.y << " " 
+    //          << p.theta << std::endl;
   }
 
 }
