@@ -18,6 +18,8 @@
 
 #include "helper_functions.h"
 
+#define _DEBUG_SWITCH true
+
 using std::string;
 using std::vector;
 
@@ -55,8 +57,10 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
     is_initialized = true;
 
     // Print your samples to the terminal.
-    //std::cout << "Init #" << i << ": " << p.x << " " << p.y << " " 
-    //          << p.theta << std::endl;
+    if(_DEBUG_SWITCH) {
+      std::cout << "Init #" << i << ": " << p.x << " " << p.y << " " 
+                << p.theta << std::endl;
+    }
   }
 
 }
