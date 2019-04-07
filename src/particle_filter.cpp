@@ -75,6 +75,44 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
    *  http://www.cplusplus.com/reference/random/default_random_engine/
    */
 
+  // Note: I guess the noise should be v_noise and yawrate_noise
+  // And the calculate of pred values shoule be based on noisy v and yawrate
+  // However it is defined as 'std_pos'. So I implement the function like this
+
+  std::default_random_engine gen;
+  double pred_x, pred_y, pred_theta;
+
+  if(_DEBUG_SWITCH) {
+    std::cout << "prediction: delta_t:" << delta_t << "\t V:" << velocity << "\t yaw_rate:" << yaw_rate << std::endl;
+  }
+
+  for (int i = 0; i < num_particles; ++i) {
+    
+    Particle p = particles[i];
+    
+    pred_x = p.x + (velocity/yaw_rate) * (sin(p.theta + yaw_rate * delta_t)-sin(p.theta));
+    pred_y = p.y + (velocity/yaw_rate) * (cos(p.theta) - cos(p.theta + yaw_rate * delta_t));
+    pred_theta = p.theta + yaw_rate * delta_t;
+
+    normal_distribution<double> dist_x(pred_x, std_pos[0]);
+    normal_distribution<double> dist_y(pred_y, std_pos[1]);
+    normal_distribution<double> dist_theta(pred_theta, std_pos[2]);
+
+    p.x = dist_x(gen);
+    p.y = dist_y(gen);
+    p.theta = dist_theta(gen); 
+
+    if(_DEBUG_SWITCH) {
+      std::cout << "Before #" << p.id << ": " << p.x << " " << p.y << " " 
+                << p.theta << std::endl;
+      std::cout << "After #" << p.id << ": " << pred_x << " " << pred_y << " " 
+                << pred_theta << std::endl;       
+    }
+
+    particles[i] = p;
+
+  }
+
 }
 
 void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted, 
