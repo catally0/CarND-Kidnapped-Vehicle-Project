@@ -248,23 +248,14 @@ inline bool read_landmark_data(std::string filename,
   return true;
 }
 
-/**
- * 
- * 
- */
-inline vector<> dist(double x1, double y1, double x2, double y2) {
-  return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-}
-
-
-inline LandmarkObs HomoTrans(Particle p, LandmarkObs obs) {
+inline LandmarkObs HomoTrans(double px, double py, double ptheta, LandmarkObs obs) {
   LandmarkObs obs_map;
   double x_part, y_part, x_obs, y_obs, theta;
-  x_part = p.x;
-  y_part = p.y;
+  x_part = px;
+  y_part = py;
   x_obs = obs.x;
   y_obs = obs.y;
-  theta = p.theta; 
+  theta = ptheta; 
 
   // transform to map x coordinate
   obs_map.x = x_part + (cos(theta) * x_obs) - (sin(theta) * y_obs);
@@ -275,6 +266,21 @@ inline LandmarkObs HomoTrans(Particle p, LandmarkObs obs) {
   return obs_map;
 }
 
-inline double MultivariateGaussian();
+inline double multiv_prob(double sig_x, double sig_y, double x_obs, double y_obs,
+                   double mu_x, double mu_y) {
+  // calculate normalization term
+  double gauss_norm;
+  gauss_norm = 1 / (2 * M_PI * sig_x * sig_y);
 
+  // calculate exponent
+  double exponent;
+  exponent = (pow(x_obs - mu_x, 2) / (2 * pow(sig_x, 2)))
+               + (pow(y_obs - mu_y, 2) / (2 * pow(sig_y, 2)));
+    
+  // calculate weight using normalization terms and exponent
+  double weight;
+  weight = gauss_norm * exp(-exponent);
+    
+  return weight;
+}
 #endif  // HELPER_FUNCTIONS_H_
