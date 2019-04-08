@@ -6,3 +6,7 @@ solution_data
 src/particle_filter_sol.cpp
 src/solutions
 # particle_filter.cpp
+.vscode/settings.json
+.vscode/ipch/a484e59871489357/mmap_address.bin
+.vscode/ipch/d2ae64392b2e6d1/PARTICLE_FILTER.ipch
+.vscode/ipch/d2ae64392b2e6d1/mmap_address.bin

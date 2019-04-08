@@ -103,9 +103,9 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
     p.theta = dist_theta(gen); 
 
     if(_DEBUG_SWITCH) {
-      std::cout << "Before #" << p.id << ": " << p.x << " " << p.y << " " 
+      std::cout << "Before #" << p.id << ": " << p.x << " " << p.y << " " \
                 << p.theta << std::endl;
-      std::cout << "After #" << p.id << ": " << pred_x << " " << pred_y << " " 
+      std::cout << "After #" << p.id << ": " << pred_x << " " << pred_y << " " \
                 << pred_theta << std::endl;       
     }
 
@@ -127,9 +127,6 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
    */
   int pred_size = predicted.size();
   int obs_size = observations.size();
-  if(_DEBUG_SWITCH) {
-    std::cout << "Landmark pred size:" << pred_size << "\t Obs size:" << obs_size;
-  }
 
   for(int i=0; i<obs_size; i++) {
     observations[i].id = -1;
@@ -146,7 +143,7 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
         }
       }
     }
-    
+    /*
     if(_DEBUG_SWITCH) {
       if(observations[i].id < 0) {
         std::cout << "Unable to find a landmark for obs #" << i << ": (" << observations[i].x << "," << observations[i].y << ")" << std::endl;
@@ -154,6 +151,7 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
         std::cout << "Find nearest landmark for obs #" << i << ": (" << observations[i].x << "," << observations[i].y << ") \t" << observations[i].id << std::endl;
       }
     }
+    */
   }
 
 }
@@ -217,16 +215,27 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
     dataAssociation(pred_landmarks, obs);
 
+    vector<int> associations;
+    vector<double> sense_x;
+    vector<double> sense_y;
+    double pweight = 1;
     for(int j = 0; j < obs_size; j++) {
-      p.associations.push_back(obs[j].id);
-      
+      associations.push_back(obs[j].id);
+      sense_x.push_back(obs[j].x);
+      sense_y.push_back(obs[j].y);
+      double lm_x = map_landmarks.landmark_list[obs[j].id)].x_f;
+      double lm_y = map_landmarks.landmark_list[obs[j].id)].y_f;
+      pweight = weight * multiv_prob(lm_x, lm_y, obs[j].x, obs[j].y, std_landmark[0], std_landmark[1]);
     }
-
-    if(_DEBUG_SWITCH) {
-        std::cout << "Associations:" << p.associations[0] << std::endl;
-    }
+    SetAssociations(p, associations, sense_x, sense_y);
+    p.weight = pweight;
     
 
+    if(_DEBUG_SWITCH) {
+        std::cout << "Weight" << p.weight << std::endl;
+    }
+
+    particles[i] = p;
   }
 
 }
