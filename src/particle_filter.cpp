@@ -223,9 +223,9 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       associations.push_back(obs[j].id);
       sense_x.push_back(obs[j].x);
       sense_y.push_back(obs[j].y);
-      double lm_x = map_landmarks.landmark_list[obs[j].id)].x_f;
-      double lm_y = map_landmarks.landmark_list[obs[j].id)].y_f;
-      pweight = weight * multiv_prob(lm_x, lm_y, obs[j].x, obs[j].y, std_landmark[0], std_landmark[1]);
+      double lm_x = map_landmarks.landmark_list[obs[j].id].x_f;
+      double lm_y = map_landmarks.landmark_list[obs[j].id].y_f;
+      pweight = pweight * multiv_prob(lm_x, lm_y, obs[j].x, obs[j].y, std_landmark[0], std_landmark[1]);
     }
     SetAssociations(p, associations, sense_x, sense_y);
     p.weight = pweight;
