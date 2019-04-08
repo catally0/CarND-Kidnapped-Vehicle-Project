@@ -125,6 +125,36 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
    *   probably find it useful to implement this method and use it as a helper 
    *   during the updateWeights phase.
    */
+  int pred_size = predicted.size;
+  int obs_size = observations.size;
+  if(_DEBUG_SWITCH) {
+    std::cout << "Landmark pred size:" << pred_size << "\t Obs size:" << obs_size;
+  }
+
+  for(int i=0; i<obs_size; i++) {
+    observations[i].id = -1;
+    double min_dist = -1.0;
+    for(int j=0; j<pred_size; j++) {
+      double dist_ = dist(predicted[j].x, predicted[j].y, observations[i].x, observations[i].y)
+      if(min_dist < 0) {
+        observations[i].id = predicted[j].id;
+        min_dist = dist_;
+      } else {
+        if(dist_ < min_dist) {
+          observations[i].id = predicted[j].id;
+          min_dist = dist_;
+        }
+      }
+    }
+    
+    if(_DEBUG_SWITCH) {
+      if(observations[i].id < 0) {
+        std::cout << "Unable to find a landmark for obs #" << i << ": (" << observations[i].x << "," << observations[i].y << ")" << std::endl;
+      } else {
+        std::cout << "Find nearest landmark for obs #" << i << ": (" << observations[i].x << "," << observations[i].y << ") \t" << observations[i].id << std::endl;
+      }
+    }
+  }
 
 }
 
@@ -144,6 +174,60 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
    *   and the following is a good resource for the actual equation to implement
    *   (look at equation 3.33) http://planning.cs.uiuc.edu/node99.html
    */
+
+  if(_DEBUG_SWITCH) {
+      std::cout << "Start update" << std::endl;
+  }
+  int map_size = map_landmarks.landmark_list.size;
+  int obs_size = observations.size;
+
+  for(int i = 0; i < num_particles; i++) {
+    Particle p = particles[i];
+
+    // Add the landmarks within the sensor range
+    double sensor_range_x_max = p.x + sensor_range;
+    double sensor_range_x_min = p.x - sensor_range;
+    double sensor_range_y_max = p.y + sensor_range;
+    double sensor_range_y_min = p.y - sensor_range;
+    
+    vector<LandmarkObs> pred_landmarks;
+    for(int j = 0; j < map_size; j++) {
+      if(map_landmarks.landmark_list[j].x > sensor_range_x_min && \
+         map_landmarks.landmark_list[j].x < sensor_range_x_max && \
+         map_landmarks.landmark_list[j].y > sensor_range_y_min && \
+         map_landmarks.landmark_list[j].y < sensor_range_y_max) {
+           LandmarkObs pred_lm;
+           pred_lm.id = map_landmarks.landmark_list[j].id;
+           pred_lm.x = map_landmarks.landmark_list[j].x;
+           pred_lm.y = map_landmarks.landmark_list[j].y;
+           pre_landmarks.push_back(pred_lm);
+      }
+    }
+
+    if(_DEBUG_SWITCH) {
+      std::cout << "Particle #" << p.id << ":(" << p.x << "," << p.y <<")";
+      std::cout << "Number of landmarks within sensor range:" << pre_landmarks.size << std::endl;
+    }
+
+    // Transform the observation to map coordinates
+    vector<LandmarkObs> obs;
+    for(int j = 0; j < obs_size; j++) {
+      obs.push_back(HomoTrans(p, observations[j]));
+    }
+
+    dataAssociation(pred_landmarks, obs);
+
+    for(int j = 0; ij < obs_size; j++) {
+      p.associations.push_back(obs[j].id);
+      
+    }
+
+    if(_DEBUG_SWITCH) {
+        std::cout << "Associations:" << p.associations << std::endl;
+    }
+    
+
+  }
 
 }
 

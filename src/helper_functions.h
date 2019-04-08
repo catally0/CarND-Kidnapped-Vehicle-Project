@@ -248,4 +248,33 @@ inline bool read_landmark_data(std::string filename,
   return true;
 }
 
+/**
+ * 
+ * 
+ */
+inline vector<> dist(double x1, double y1, double x2, double y2) {
+  return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+}
+
+
+inline LandmarkObs HomoTrans(Particle p, LandmarkObs obs) {
+  LandmarkObs obs_map;
+  double x_part, y_part, x_obs, y_obs, theta;
+  x_part = p.x;
+  y_part = p.y;
+  x_obs = obs.x;
+  y_obs = obs.y;
+  theta = p.theta; 
+
+  // transform to map x coordinate
+  obs_map.x = x_part + (cos(theta) * x_obs) - (sin(theta) * y_obs);
+
+  // transform to map y coordinate
+  obs_map.y = y_part + (sin(theta) * x_obs) + (cos(theta) * y_obs);
+
+  return obs_map;
+}
+
+inline double MultivariateGaussian();
+
 #endif  // HELPER_FUNCTIONS_H_
