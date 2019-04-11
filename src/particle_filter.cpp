@@ -53,6 +53,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
     p.weight = 1;
     
     particles.push_back(p);
+    weights.push_back(p.weight);
 
     is_initialized = true;
 
@@ -229,7 +230,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     }
     SetAssociations(p, associations, sense_x, sense_y);
     p.weight = pweight;
-    
+    weights[i] = pweight;
 
     if(_DEBUG_SWITCH) {
         std::cout << "Weight" << p.weight << std::endl;
@@ -247,6 +248,35 @@ void ParticleFilter::resample() {
    * NOTE: You may find std::discrete_distribution helpful here.
    *   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
    */
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  
+
+
+  std::vector<Particle> new_Particles;
+  if(_DEBUG_SWITCH) {
+    for(int i=0; i<num_particles; i++) {
+      cout<<"i_th particle weight"<< particles[i].weight << "\t" << weights[i] << std::endl;
+      
+    }
+  }
+
+  std::discrete_distribution<> d(weights);
+  std::map<int, int> m;
+
+  for(int n=0; n<num_particles; ++n) {
+    int new_particle_index = d(gen);
+    ++m[new_particle_index];
+    new_Particles.push_back(particles[new_particle_index]);
+  }
+  
+  if(_DEBUG_SWITCH) {
+    for(auto p : m) {
+        std::cout << p.first << " generated " << p.second << " times\n";
+    }
+  }
+
+  particles = new_Particles;
 
 }
 
