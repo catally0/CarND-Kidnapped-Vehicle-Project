@@ -60,7 +60,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
     is_initialized = true;
 
     // Print your samples to the terminal.
-    if(_DEBUG_SWITCH) {
+    if(false) {
       std::cout << "Init #" << i << ": " << p.x << " " << p.y << " " 
                 << p.theta << std::endl;
     }
@@ -85,7 +85,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
   std::default_random_engine gen;
   double pred_x, pred_y, pred_theta;
 
-  if(_DEBUG_SWITCH) {
+  if(true) {
     std::cout << "prediction: delta_t:" << delta_t << "\t V:" << velocity << "\t yaw_rate:" << yaw_rate << std::endl;
   }
 
@@ -93,7 +93,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
     
     Particle p = particles[i];
     
-    pred_x = p.x + (velocity/yaw_rate) * (sin(p.theta + yaw_rate * delta_t)-sin(p.theta));
+    pred_x = p.x + (velocity/yaw_rate) * (sin(p.theta + yaw_rate * delta_t) - sin(p.theta));
     pred_y = p.y + (velocity/yaw_rate) * (cos(p.theta) - cos(p.theta + yaw_rate * delta_t));
     pred_theta = p.theta + yaw_rate * delta_t;
 
@@ -105,7 +105,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
     p.y = dist_y(gen);
     p.theta = dist_theta(gen); 
 
-    if(_DEBUG_SWITCH) {
+    if(false) {
       std::cout << "Before #" << p.id << ": " << p.x << " " << p.y << " " \
                 << p.theta << std::endl;
       std::cout << "After #" << p.id << ": " << pred_x << " " << pred_y << " " \
@@ -134,8 +134,10 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
   for(int i=0; i<obs_size; i++) {
     observations[i].id = -1;
     double min_dist = -1.0;
+    std::cout << "obs:(" << observations[i].x << "," << observations[i].y << ")" << std::endl;
     for(int j=0; j<pred_size; j++) {
       double dist_ = dist(predicted[j].x, predicted[j].y, observations[i].x, observations[i].y);
+      //std::cout << "pred landmark:(" << predicted[j].x << "," << predicted[j].y << ")\t dist:" << dist_ << std::endl;
       if(min_dist < 0) {
         observations[i].id = predicted[j].id;
         min_dist = dist_;
@@ -143,18 +145,10 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
         if(dist_ < min_dist) {
           observations[i].id = predicted[j].id;
           min_dist = dist_;
+          //std::cout<< "nearest:" << std::endl;
         }
       }
     }
-    /*
-    if(_DEBUG_SWITCH) {
-      if(observations[i].id < 0) {
-        std::cout << "Unable to find a landmark for obs #" << i << ": (" << observations[i].x << "," << observations[i].y << ")" << std::endl;
-      } else {
-        std::cout << "Find nearest landmark for obs #" << i << ": (" << observations[i].x << "," << observations[i].y << ") \t" << observations[i].id << std::endl;
-      }
-    }
-    */
   }
 
 }
@@ -198,14 +192,16 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
          map_landmarks.landmark_list[j].y_f > sensor_range_y_min && \
          map_landmarks.landmark_list[j].y_f < sensor_range_y_max) {
            LandmarkObs pred_lm;
+        
            pred_lm.id = map_landmarks.landmark_list[j].id_i;
+        //std::cout<< "landmark index:" << j << "\t id:" << map_landmarks.landmark_list[j].id_i << std::endl;
            pred_lm.x = map_landmarks.landmark_list[j].x_f;
            pred_lm.y = map_landmarks.landmark_list[j].y_f;
            pred_landmarks.push_back(pred_lm);
       }
     }
 
-    if(_DEBUG_SWITCH) {
+    if(false) {
       std::cout << "Particle #" << p.id << ":(" << p.x << "," << p.y <<")";
       std::cout << "Number of landmarks within sensor range:" << pred_landmarks.size() << std::endl;
     }
@@ -226,16 +222,18 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       associations.push_back(obs[j].id);
       sense_x.push_back(obs[j].x);
       sense_y.push_back(obs[j].y);
-      double lm_x = map_landmarks.landmark_list[obs[j].id].x_f;
-      double lm_y = map_landmarks.landmark_list[obs[j].id].y_f;
-      pweight = pweight * multiv_prob(lm_x, lm_y, obs[j].x, obs[j].y, std_landmark[0], std_landmark[1]);
+      double lm_x = map_landmarks.landmark_list[obs[j].id - 1].x_f;
+      double lm_y = map_landmarks.landmark_list[obs[j].id - 1].y_f;
+      double prob = fabs(multiv_prob(lm_x, lm_y, obs[j].x, obs[j].y, std_landmark[0], std_landmark[1]));
+      pweight = pweight * prob;
+      std::cout << "landmark pos: (" << lm_x << "," << lm_y << ")\t obs pos: (" << obs[j].x << "," << obs[j].y << ")\t multiv_prob: " << prob << std::endl;
     }
     SetAssociations(p, associations, sense_x, sense_y);
     p.weight = pweight;
     weights[i] = pweight;
 
-    if(_DEBUG_SWITCH) {
-        std::cout << "Weight" << p.weight << std::endl;
+    if(false) {
+        std::cout << "Final weight for #" << i << "_th:" << p.weight << std::endl;
     }
 
     particles[i] = p;
@@ -256,14 +254,14 @@ void ParticleFilter::resample() {
 
 
   std::vector<Particle> new_Particles;
-  if(_DEBUG_SWITCH) {
+  if(true) {
+    std::cout<< "Start resample" << std::endl;
     for(int i=0; i<num_particles; i++) {
-      std::cout<<"i_th particle weight"<< particles[i].weight << "\t" << weights[i] << std::endl;
-      
+      std::cout<< i <<"_th particle weight:" << weights[i] << std::endl;
     }
   }
 
-  std::discrete_distribution<> d(weights);
+  std::discrete_distribution<> d(weights.begin(), weights.end());
   std::map<int, int> m;
 
   for(int n=0; n<num_particles; ++n) {
