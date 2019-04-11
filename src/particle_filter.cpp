@@ -16,6 +16,8 @@
 #include <string>
 #include <vector>
 
+#include <map>
+
 #include "helper_functions.h"
 
 #define _DEBUG_SWITCH true
@@ -256,7 +258,7 @@ void ParticleFilter::resample() {
   std::vector<Particle> new_Particles;
   if(_DEBUG_SWITCH) {
     for(int i=0; i<num_particles; i++) {
-      cout<<"i_th particle weight"<< particles[i].weight << "\t" << weights[i] << std::endl;
+      std::cout<<"i_th particle weight"<< particles[i].weight << "\t" << weights[i] << std::endl;
       
     }
   }
