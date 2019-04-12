@@ -99,9 +99,15 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
     
     //noise_velocity = dist_v(gen);
     //noise_yawrate = dist_yawrate(gen);
-    pred_x = p.x + (velocity/yaw_rate) * (sin(p.theta + yaw_rate * delta_t)-sin(p.theta));
-    pred_y = p.y + (velocity/yaw_rate) * (cos(p.theta) - cos(p.theta + yaw_rate * delta_t));
-    pred_theta = p.theta + yaw_rate * delta_t;
+    if(yaw_rate != 0.0) {
+      pred_x = p.x + (velocity/yaw_rate) * (sin(p.theta + yaw_rate * delta_t)-sin(p.theta));
+      pred_y = p.y + (velocity/yaw_rate) * (cos(p.theta) - cos(p.theta + yaw_rate * delta_t));
+      pred_theta = p.theta + yaw_rate * delta_t;
+    }else{
+      pred_x = p.x + velocity * delta_t * cos(p.theta);
+      pred_y = p.y + velocity * delta_t * sin(p.theta);
+      pred_theta = p.theta;
+    }
 
     normal_distribution<double> dist_x(pred_x, std_pos[0]);
     normal_distribution<double> dist_y(pred_y, std_pos[1]);
